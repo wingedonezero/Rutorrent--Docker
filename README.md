@@ -10,9 +10,10 @@ layering, so a *default* rtorrent does exactly what you want: download to **one*
 in place, no auto-rehash.
 
 ## What's inside
-- **rtorrent + libtorrent** from Arch, **pinned to `0.16.14`** via the Arch Linux Archive — the
-  newest version strict private trackers (e.g. U2/dmhy) still whitelist. Arch's latest (`0.16.15`)
-  gets rejected as a *"Banned Client"*, so we hold a release back. No custom compile.
+- **rtorrent + libtorrent** from Arch, **pinned to `0.15.5`** via the Arch Linux Archive — the
+  version the popular [Swizzin](https://github.com/swizzin/swizzin) installer compiles and that
+  strict private trackers (e.g. U2/dmhy) whitelist. Arch's bleeding-edge `0.16.x` is *newer* than
+  those allow-lists and gets rejected as a *"Banned Client"*. No custom compile.
 - **nginx + php-fpm + ruTorrent** (latest)
 - ruTorrent plugin helpers: `mediainfo`, `ffmpeg`, `sox`, `unrar`/`unzip`/`7z`, `dumptorrent`,
   and `python` + `cloudscraper` for the Cloudflare plugin
