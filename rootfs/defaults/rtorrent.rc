@@ -1,0 +1,38 @@
+# ===================================================================
+#  rtorrent config — EDIT THIS FILE to change rtorrent's behaviour.
+#  It lives in your appdata at /config/rtorrent/rtorrent.rc and your
+#  edits persist (the container only seeds a default here on first run).
+#  Restart the container after editing.
+# ===================================================================
+
+# Run headless (no terminal)
+system.daemon.set = true
+
+# SCGI socket for ruTorrent (php-fpm runs as the same user, so no chmod needed)
+network.scgi.open_local = /config/rtorrent/.rtorrent.sock
+
+# Session state + the single download directory
+session.path.set = /config/rtorrent/session
+directory.default.set = /downloads
+
+# Permissions: downloads come out 666/777 so other apps (Plex/Jellyfin) can read them.
+# Change to 0022 for stock-tight perms.
+system.umask.set = 0000
+
+# Incoming peer port (forward this on the router)
+network.port_range.set = 50000-50000
+network.port_random.set = no
+
+# Private-tracker friendly: no DHT, no peer-exchange
+dht.mode.set = disable
+protocol.pex.set = no
+
+# Encryption: accept anything, prefer encrypted outgoing
+protocol.encryption.set = allow_incoming,try_outgoing,enable_retry
+
+# Don't re-hash a torrent the moment it finishes
+pieces.hash.on_completion.set = no
+
+# Logging
+log.open_file = "log", /config/rtorrent/rtorrent.log
+log.add_output = "info", "log"
