@@ -19,6 +19,11 @@ directory.default.set = /downloads
 # Change to 0022 for stock-tight perms.
 system.umask.set = 0000
 
+# Cap the memory-mapped chunk cache. rtorrent 0.16 defaults this to ~32 GB, which LOOKS alarming in
+# the UI / Unraid memory stat — but it's reclaimable cache, not real RAM usage. 4 GB is plenty for a
+# small seedbox and keeps the reported memory sane. Raise it if you want more file caching.
+pieces.memory.max.set = 4G
+
 # Incoming peer port (forward this on the router)
 network.port_range.set = 50000-50000
 network.port_random.set = no
