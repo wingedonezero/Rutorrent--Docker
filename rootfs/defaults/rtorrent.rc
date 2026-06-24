@@ -33,6 +33,6 @@ protocol.encryption.set = allow_incoming,try_outgoing,enable_retry
 # Don't re-hash a torrent the moment it finishes
 pieces.hash.on_completion.set = no
 
-# Logging
-log.open_file = "log", /config/rtorrent/rtorrent.log
+# Logging (lives in your appdata at /config/log/rtorrent.log)
+log.open_file = "log", /config/log/rtorrent.log
 log.add_output = "info", "log"

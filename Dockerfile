@@ -47,5 +47,9 @@ EXPOSE 8080 50000
 LABEL net.unraid.docker.webui="http://[IP]:[PORT:8080]/" \
       net.unraid.docker.icon="https://raw.githubusercontent.com/Novik/ruTorrent/master/images/favicon-196x196.png"
 
+# Healthy only when the whole chain works: nginx → php → rtorrent reports started.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s \
+  CMD curl -fsS http://localhost:8080/php/getplugins.php 2>/dev/null | grep -q '"started":true\|started:true' || exit 1
+
 VOLUME ["/downloads", "/config"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

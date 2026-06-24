@@ -25,12 +25,13 @@ fi
 # --- one-time migration from the OLD flat layout (session/, rutorrent-share/, rtorrent.log at /config root) ---
 mkdir -p /config/rtorrent /config/rutorrent
 [ -d /config/session ]         && [ ! -e /config/rtorrent/session ]      && mv /config/session         /config/rtorrent/session
-[ -f /config/rtorrent.log ]    && [ ! -e /config/rtorrent/rtorrent.log ] && mv /config/rtorrent.log    /config/rtorrent/rtorrent.log
 [ -d /config/rutorrent-share ] && [ ! -e /config/rutorrent/share ]       && mv /config/rutorrent-share /config/rutorrent/share
-rm -f /config/.rtorrent.sock 2>/dev/null || true
+rm -f /config/.rtorrent.sock /config/rtorrent.log /config/rtorrent/rtorrent.log 2>/dev/null || true  # old logs; logs now live in /config/log/
 
 # --- folders ---
-mkdir -p /config/rtorrent/session /config/rutorrent /config/nginx /config/php /downloads /run/php-fpm /var/lib/nginx/tmp /var/log/nginx
+mkdir -p /config/log /config/rtorrent/session /config/rutorrent /config/nginx /config/php \
+         /config/rutorrent/plugins /config/rutorrent/themes \
+         /downloads /run/php-fpm /var/lib/nginx/tmp /var/log/nginx
 
 # --- editable configs: copy the baked default ONLY if you don't already have one ---
 [ -f /config/rtorrent/rtorrent.rc ] || cp /defaults/rtorrent.rc      /config/rtorrent/rtorrent.rc
@@ -47,8 +48,15 @@ ln -sf /config/rutorrent/share /var/www/rutorrent/share
 # keep ruTorrent pointed at rtorrent's socket (only touches the scgi lines; your other edits are safe)
 sed -i 's#\$scgi_port = .*#\$scgi_port = 0;#; s#\$scgi_host = .*#\$scgi_host = "unix://'"${SOCK}"'";#' /config/rutorrent/conf/config.php
 
+# --- drop-in plugins/themes: put custom ruTorrent plugins/themes in these appdata folders and
+#     they get overlaid onto the built-ins on each start (built-ins stay in the image) ---
+[ -f /config/rutorrent/plugins/README.txt ] || echo "Drop custom ruTorrent plugin folders here — they're added to ruTorrent on container start." > /config/rutorrent/plugins/README.txt
+[ -f /config/rutorrent/themes/README.txt ]  || echo "Drop custom ruTorrent theme folders here — they're added to the theme plugin on container start." > /config/rutorrent/themes/README.txt
+for d in /config/rutorrent/plugins/*/; do [ -d "$d" ] && cp -rf "$d" /var/www/rutorrent/plugins/ 2>/dev/null; done
+for d in /config/rutorrent/themes/*/;  do [ -d "$d" ] && cp -rf "$d" /var/www/rutorrent/plugins/theme/themes/ 2>/dev/null; done
+
 # --- ownership ---
-chown -R rtorrent:rtorrent /config
+chown -R rtorrent:rtorrent /config /var/www/rutorrent
 chown -R rtorrent:rtorrent /var/lib/nginx /var/log/nginx 2>/dev/null || true
 chown rtorrent:rtorrent /downloads /run/php-fpm
 
