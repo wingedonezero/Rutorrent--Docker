@@ -2,19 +2,21 @@
 #
 # Minimal, near-stock rtorrent + ruTorrent on Arch Linux (glibc).
 # rtorrent + libtorrent come from Arch — but PINNED to a version strict private trackers still
-# whitelist. Arch's newest (0.16.15+) gets rejected as a "Banned Client" on e.g. U2/dmhy, whose
-# accepted-client list lags a release or two behind. So we pull the matching pinned pair from the
-# Arch Linux Archive instead of the live repo. Still no custom compile.
-# Bump RTORRENT_VER below as trackers add newer versions (and once they catch up to Arch's current
-# release you can drop the pin and go back to a plain `pacman -S rtorrent`).
+# whitelist. Arch ships the bleeding-edge 0.16.x, which trackers like U2/dmhy reject as a
+# "Banned Client": their allow-lists — and the popular Swizzin seedbox installer — top out at the
+# 0.15.x line. So we pull a pinned 0.15.x pair from the Arch Linux Archive instead of the live
+# repo. Still no custom compile.
+# Bump RTORRENT_VER below only to a version your tracker actually accepts (drop the pin entirely
+# once they whitelist Arch's current release).
 # No temp/complete folders, no move-on-complete, no WebDAV, no opinionated layering.
 #
 FROM archlinux:base
 
-# The rtorrent/libtorrent version to pin. U2/dmhy's FAQ currently lists 0.16.13–0.16.14 as
-# acceptable; 0.16.15 is too new. rtorrent + libtorrent are released in lockstep, so this one
-# number drives both. (If your tracker only accepts 0.16.13, change this to 0.16.13.)
-ARG RTORRENT_VER=0.16.14
+# The rtorrent/libtorrent version to pin. We match Swizzin (the popular seedbox installer): its
+# newest build is 0.15.5, the version proven to pass strict trackers like U2/dmhy. Arch's 0.16.x
+# is newer than those trackers whitelist, so it gets banned. rtorrent + libtorrent release in
+# lockstep, so this one number drives both. (Swizzin also offered 0.15.3 / 0.15.1 / 0.9.8.)
+ARG RTORRENT_VER=0.15.5
 
 # Update the keyring first (avoids signature errors on a stale base), then install the web stack +
 # tools. rtorrent/libtorrent are installed separately just below — pinned, straight from the Arch
