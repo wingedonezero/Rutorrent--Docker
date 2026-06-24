@@ -39,8 +39,8 @@ RUN git clone --depth 1 https://github.com/Novik/ruTorrent.git /var/www/rutorren
 COPY rootfs/ /
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# 8080 = ruTorrent web UI · 50000 = incoming peer port
-EXPOSE 8080 50000
+# 8080 = ruTorrent web UI · 50000/tcp = incoming peers · 50000/udp = DHT (public torrents)
+EXPOSE 8080 50000/tcp 50000/udp
 
 # Unraid integration: gives the container a clickable WebUI button + an icon in the Docker tab,
 # the same as any other managed container.

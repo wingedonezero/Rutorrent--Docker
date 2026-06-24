@@ -28,9 +28,12 @@ pieces.memory.max.set = 4G
 network.port_range.set = 50000-50000
 network.port_random.set = no
 
-# Private-tracker friendly: no DHT, no peer-exchange
-dht.mode.set = disable
-protocol.pex.set = no
+# DHT "auto" + peer-exchange: used for PUBLIC torrents, automatically skipped for PRIVATE ones
+# (their "private" flag disables DHT/PEX), so it's safe on private trackers AND works for public.
+# DHT uses the listening port (50000) below. If you run ONLY private trackers and want to be
+# extra-safe, set dht.mode.set = disable and protocol.pex.set = no.
+dht.mode.set = auto
+protocol.pex.set = yes
 
 # Encryption: accept anything, prefer encrypted outgoing
 protocol.encryption.set = allow_incoming,try_outgoing,enable_retry
