@@ -1,17 +1,26 @@
 # syntax=docker/dockerfile:1
 #
 # Minimal, near-stock rtorrent + ruTorrent on Arch Linux (glibc).
-# rtorrent + libtorrent come straight from Arch's repos (currently 0.16.15) — no custom compile.
+# rtorrent + libtorrent come from Arch — but PINNED to a version strict private trackers still
+# whitelist. Arch's newest (0.16.15+) gets rejected as a "Banned Client" on e.g. U2/dmhy, whose
+# accepted-client list lags a release or two behind. So we pull the matching pinned pair from the
+# Arch Linux Archive instead of the live repo. Still no custom compile.
+# Bump RTORRENT_VER below as trackers add newer versions (and once they catch up to Arch's current
+# release you can drop the pin and go back to a plain `pacman -S rtorrent`).
 # No temp/complete folders, no move-on-complete, no WebDAV, no opinionated layering.
-# The whole point: a *default* rtorrent already does what we want. We just plumb it to ruTorrent.
 #
 FROM archlinux:base
 
-# Update the keyring first (avoids signature errors on a stale base), then install
-# rtorrent (pulls libtorrent), the web stack, and a couple of tools.
+# The rtorrent/libtorrent version to pin. U2/dmhy's FAQ currently lists 0.16.13–0.16.14 as
+# acceptable; 0.16.15 is too new. rtorrent + libtorrent are released in lockstep, so this one
+# number drives both. (If your tracker only accepts 0.16.13, change this to 0.16.13.)
+ARG RTORRENT_VER=0.16.14
+
+# Update the keyring first (avoids signature errors on a stale base), then install the web stack +
+# tools. rtorrent/libtorrent are installed separately just below — pinned, straight from the Arch
+# Linux Archive, both in the same transaction so rtorrent uses the pinned libtorrent (not 0.16.15).
 RUN pacman -Syu --noconfirm --needed archlinux-keyring \
  && pacman -S --noconfirm --needed \
-      rtorrent \
       nginx \
       php php-fpm php-gd \
       curl \
@@ -24,6 +33,10 @@ RUN pacman -Syu --noconfirm --needed archlinux-keyring \
       sox \
       unzip unrar 7zip \
       dumptorrent \
+ && pacman -U --noconfirm \
+      https://archive.archlinux.org/packages/l/libtorrent/libtorrent-${RTORRENT_VER}-1-x86_64.pkg.tar.zst \
+      https://archive.archlinux.org/packages/r/rtorrent/rtorrent-${RTORRENT_VER}-1-x86_64.pkg.tar.zst \
+ && sed -i '/^\[options\]/a IgnorePkg = rtorrent libtorrent' /etc/pacman.conf \
  && pacman -Scc --noconfirm \
  && rm -rf /var/cache/pacman/pkg/* /var/lib/pacman/sync/*
 

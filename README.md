@@ -10,7 +10,9 @@ layering, so a *default* rtorrent does exactly what you want: download to **one*
 in place, no auto-rehash.
 
 ## What's inside
-- **rtorrent + libtorrent** straight from Arch's repo (currently `0.16.x`) — no custom compile
+- **rtorrent + libtorrent** from Arch, **pinned to `0.16.14`** via the Arch Linux Archive — the
+  newest version strict private trackers (e.g. U2/dmhy) still whitelist. Arch's latest (`0.16.15`)
+  gets rejected as a *"Banned Client"*, so we hold a release back. No custom compile.
 - **nginx + php-fpm + ruTorrent** (latest)
 - ruTorrent plugin helpers: `mediainfo`, `ffmpeg`, `sox`, `unrar`/`unzip`/`7z`, `dumptorrent`,
   and `python` + `cloudscraper` for the Cloudflare plugin
@@ -43,4 +45,7 @@ WebUI button + icon. **An Unassigned Devices download drive must use Access Mode
 ## Notes
 - `system.umask.set = 0000` (in `rootfs/etc/rtorrent/rtorrent.rc`) makes downloads world-readable
   so other apps (Plex/Jellyfin) can use them. Change to `0022` for stock-tight perms.
+- **Client version is pinned** (`RTORRENT_VER` in the [`Dockerfile`](Dockerfile)) so strict private
+  trackers don't reject it as a *"Banned Client"*. If a tracker bans it again after they refresh
+  their allow-list, bump the number; once they accept Arch's current release, drop the pin.
 - The image is pushed to GHCR automatically on every push to `main`.
