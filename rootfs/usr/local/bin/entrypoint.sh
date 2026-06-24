@@ -60,6 +60,9 @@ chown -R rtorrent:rtorrent /config /var/www/rutorrent
 chown -R rtorrent:rtorrent /var/lib/nginx /var/log/nginx 2>/dev/null || true
 chown rtorrent:rtorrent /downloads /run/php-fpm
 
+# --- clear a stale socket + session lock left behind by an unclean prior stop ---
+rm -f "${SOCK}" /config/rtorrent/session/rtorrent.lock
+
 # --- launch rtorrent (headless but foreground, so we background it) ---
 echo "[init] starting rtorrent"
 su rtorrent -s /bin/bash -c "cd /config && exec rtorrent -n -o import=/config/rtorrent/rtorrent.rc" &
@@ -68,8 +71,22 @@ if [ -S "${SOCK}" ]; then echo "[init] rtorrent scgi socket up"; else
   echo "[init] WARNING: no socket — rtorrent.log:"; tail -20 /config/rtorrent/rtorrent.log 2>/dev/null || true
 fi
 
-# --- php-fpm + nginx (nginx config now comes from /config too) ---
+# --- php-fpm ---
 echo "[init] starting php-fpm"
 php-fpm --daemonize
+
+# --- graceful shutdown: on container stop/restart/update, shut rtorrent down cleanly so it sends
+#     'stopped' announces to the trackers (no ghost peers) and releases the session lock ---
+graceful_stop() {
+  echo "[init] stopping — shutting rtorrent down gracefully (stopped-announces + lock release)..."
+  pkill -INT -f 'import=/config/rtorrent/rtorrent.rc' 2>/dev/null || true
+  for i in $(seq 1 25); do pgrep -f 'import=/config/rtorrent/rtorrent.rc' >/dev/null 2>&1 || break; sleep 1; done
+  echo "[init] rtorrent stopped cleanly"
+  exit 0
+}
+trap graceful_stop TERM INT
+
+# --- nginx in foreground (as a bg job, so the trap can still fire when the container is stopped) ---
 echo "[init] starting nginx → http://<host>:8080"
-exec nginx -c /config/nginx/nginx.conf -g 'daemon off;'
+nginx -c /config/nginx/nginx.conf -g 'daemon off;' &
+wait $!

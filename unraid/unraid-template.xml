@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/Novik/ruTorrent/master/images/favicon-196x196.png</Icon>
-  <ExtraParams/>
+  <ExtraParams>--stop-timeout=30</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <DateInstalled>0</DateInstalled>
